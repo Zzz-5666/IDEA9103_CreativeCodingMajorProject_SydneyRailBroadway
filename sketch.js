@@ -1,7 +1,8 @@
 
-// sketch.js — Sydney Rail Network
-// Canvas: 800x800. Original design space: 600x500.
-// All coordinates preserved; scaled up uniformly for full-canvas adaptation.
+// sketch.js — Sydney Rail Network Map
+// Adjusted Canvas to 1000x800
+// Draw in 960x800, with +20 px margin each side
+// Visual Balance Improvements
 
 const ORIG_W = 600;
 const ORIG_H = 500;
@@ -25,17 +26,21 @@ const C_T7 = "#808080";
 const C_UNDEF = "#D3D3D3";
 
 function setup() {
-  createCanvas(800, 800);
+  createCanvas(1000, 800);
   angleMode(DEGREES);
   noLoop();
-  textFont("sans-serif"); // unified font
+  textFont("sans-serif");
   textAlign(LEFT, TOP);
 }
 
 function draw() {
   background(255);
+
+  // leave 20px margins on each side
   push();
-  scale(width / ORIG_W, height / ORIG_H);
+  translate(20, 0);
+  scale(960 / ORIG_W, 800 / ORIG_H);
+
   drawScene();
   pop();
 }
@@ -280,4 +285,5 @@ function drawScene() {
   line(165, 210, 190, 235);
   line(190, 235, 370, 235);
 }
+
 
