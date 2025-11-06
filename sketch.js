@@ -1,14 +1,20 @@
 
-// City Circle demo — animated red "train" moving in loop
+// sketch.js — Sydney Rail Network (simple looping car version)
+// Canvas: 1000x800. Draw space: 960x800 (20px margins left/right).
 
 const ORIG_W = 600;
 const ORIG_H = 500;
 
-// Base colors
+// ---------- Style ----------
+const STROKE_W = 1;
+const DOT_R = 6;
+const TITLE_FONT_SIZE = 18;
+const LABEL_FONT_SIZE = 12;
+
+// ---------- Colors ----------
 const COL_BG_BASE = "#FBFAF8";
 const COL_SEA = "#D4E8EF";
 
-// Line colors
 const C_M1 = "#80FFF7";
 const C_T5 = "#FF007F";
 const C_T1 = "#FFAE42";
@@ -22,9 +28,51 @@ const C_PINK = "#FFB6C1";
 const C_T7 = "#808080";
 const C_UNDEF = "#D3D3D3";
 
-// Animation globals
-let cityCirclePath = [];
-let train;
+// ---------- Path data ----------
+const P_M1 = [
+  {x:100,y:150},{x:293,y:150},{x:293,y:170},{x:355,y:170},{x:370,y:200},
+  {x:370,y:240},{x:405,y:240},{x:405,y:270},{x:402,y:280},{x:402,y:320},{x:380,y:340}
+];
+const P_T5 = [
+  {x:50,y:50},{x:50,y:190},{x:100,y:215},{x:150,y:215},{x:190,y:250},
+  {x:140,y:300},{x:140,y:400},{x:60,y:400}
+];
+const P_T1 = [
+  {x:55,y:50},{x:55,y:185},{x:100,y:210},{x:155,y:210},
+  {x:30,y:210},{x:100,y:210},
+  {x:155,y:210},{x:250,y:300},{x:380,y:300},{x:380,y:200},{x:300,y:55},{x:300,y:15}
+];
+const P_T2 = [
+  {x:178,y:245},{x:192,y:258},{x:145,y:305},{x:145,y:405},{x:60,y:405},
+  {x:192,y:258},{x:245,y:305},{x:385,y:305},{x:385,y:220},{x:430,y:220},{x:430,y:280},{x:385,y:280}
+];
+const P_T3 = [
+  {x:150,y:380},{x:150,y:340},{x:245,y:340},{x:245,y:310},
+  {x:390,y:310},{x:390,y:225},{x:425,y:225},{x:425,y:275},{x:390,y:275}
+];
+const P_T8 = [
+  {x:150,y:450},{x:150,y:395},{x:300,y:395},{x:395,y:310},{x:395,y:230},
+  {x:420,y:230},{x:420,y:270},{x:395,y:270},{x:395,y:350},{x:385,y:360},{x:340,y:360}
+];
+const P_T4 = [
+  {x:370,y:480},{x:370,y:338},{x:400,y:313},{x:400,y:255},{x:490,y:255}
+];
+const P_T4_SHORT = [{x:370,y:470},{x:440,y:470}];
+const P_T9 = [{x:297,y:55},{x:297,y:295},{x:375,y:295},{x:375,y:200},{x:330,y:120}];
+const P_T6 = [{x:270,y:355},{x:250,y:340},{x:250,y:312}];
+const P_PINK = [{x:270,y:355},{x:310,y:355},{x:330,y:340},{x:355,y:340}];
+const P_T7 = [{x:250,y:295},{x:270,y:280},{x:270,y:240}];
+const P_UNDEF1 = [{x:50,y:380},{x:50,y:260},{x:70,y:210}];
+const P_UNDEF2 = [{x:165,y:210},{x:190,y:235},{x:370,y:235}];
+
+// ---------- Car (auto loop around T3 right rectangle) ----------
+const CAR_COLOR = "#ED1C24";
+const CAR_R = 7;
+let carPath = [];
+let carSegLens = [];
+let carTotalLen = 0;
+let carDist = 0;
+let carSpeed = 1;
 
 function setup() {
   createCanvas(1000, 800);
@@ -32,45 +80,45 @@ function setup() {
   textFont("sans-serif");
   textAlign(LEFT, TOP);
 
-  // Define the City Circle route
-cityCirclePath = [
+  // Car Path
+  carPath = [
   createVector(390, 225),
   createVector(425, 225),
-  createVector(425, 245),
   createVector(425, 275),
-  createVector(405, 275),
-  createVector(390, 265),
+  createVector(390, 275),
   createVector(390, 225)
 ];
 
-  // Create a red "train" that loops along the path
-  train = new Mover(cityCirclePath, "#FF0000", 0.005);
+  carSegLens = [];
+  carTotalLen = 0;
+  for (let i = 0; i < carPath.length - 1; i++) {
+    const d = p5.Vector.dist(carPath[i], carPath[i + 1]);
+    carSegLens.push(d);
+    carTotalLen += d;
+  }
 }
 
 function draw() {
   background(255);
-
-  // Leave 20px margin on each side
   push();
   translate(20, 0);
   scale(960 / ORIG_W, 800 / ORIG_H);
 
-  drawScene();
-
-  // --- City Circle Train Animation ---
-  train.update();
-  train.show();
+  drawSea();
+  drawRails();
+  drawStations();
+  advanceCar();
+  drawCar();
 
   pop();
 }
 
-// ------------------ DRAW SCENE ------------------
-function drawScene() {
+// ---------- Layers ----------
+function drawSea() {
   noStroke();
   fill(COL_BG_BASE);
   rect(0, 0, 500, 500);
 
-  // Sea panels
   fill(COL_SEA);
   rect(500, 0, 70, 500, 2);
   rect(440, 0, 60, 70, 2);
@@ -82,255 +130,105 @@ function drawScene() {
   rect(290, 225, 50, 20, 2);
   rect(360, 240, 70, 30, 2);
 
-  push();
-  translate(340, 230);
-  rotate(40);
-  rect(0, 0, 40, 10, 2);
-  pop();
+  push(); translate(340,230); rotate(40); rect(0,0,40,10,2); pop();
+  push(); translate(420,240); rotate(-20); rect(0,0,60,10,2); pop();
+  push(); translate(450,330); rotate(70); rect(0,0,60,20,2); pop();
+  push(); translate(430,450); rotate(45); fill(COL_BG_BASE); rect(0,0,30,20,2); pop();
 
-  push();
-  translate(420, 240);
-  rotate(-20);
-  rect(0, 0, 60, 10, 2);
-  pop();
-
-  push();
-  translate(450, 330);
-  rotate(70);
-  rect(0, 0, 60, 20, 2);
-  pop();
-
-  push();
-  translate(430, 450);
-  rotate(45);
-  fill(COL_BG_BASE);
-  rect(0, 0, 30, 20, 2);
-  pop();
-
-  // Title
   fill("#323369");
   noStroke();
-  textSize(18);
-  text("Sydney rail network map", 10, 10);
+  textSize(TITLE_FONT_SIZE);
+  text("Sydney Rail Network Map", 10, 10);
+}
 
-  // --- M1 ---
-  stroke(C_M1);
-  strokeWeight(1);
+function drawRails() {
+  strokeWeight(STROKE_W);
   noFill();
-  fill(C_M1);
-  noStroke();
-  circle(100, 150, 6);
-  circle(380, 340, 6);
-  stroke(C_M1);
-  line(100, 150, 293, 150);
-  line(293, 150, 293, 170);
-  line(293, 170, 355, 170);
-  line(355, 170, 370, 200);
-  line(370, 200, 370, 240);
-  line(370, 240, 405, 240);
-  line(405, 240, 405, 270);
-  line(405, 270, 402, 280);
-  line(402, 280, 402, 320);
-  line(402, 320, 380, 340);
-  noStroke();
-  fill(C_M1);
-  textSize(14);
-  text("M1", 105, 135);
 
-  // --- T5 ---
-  noStroke();
-  fill(C_T5);
-  circle(50, 50, 6);
-  circle(60, 400, 6);
-  stroke(C_T5);
-  line(50, 50, 50, 190);
-  line(50, 190, 100, 215);
-  line(100, 215, 150, 215);
-  line(150, 215, 190, 250);
-  line(190, 250, 140, 300);
-  line(140, 300, 140, 400);
-  line(140, 400, 60, 400);
-  noStroke();
-  fill("#4D798A");
-  textSize(14);
-  text("T5", 30, 60);
-
-  // --- T1 ---
-  noStroke();
-  fill(C_T1);
-  circle(55, 50, 6);
-  circle(300, 15, 6);
-  circle(30, 210, 6);
-  stroke(C_T1);
-  line(55, 50, 55, 185);
-  line(55, 185, 100, 210);
-  line(100, 210, 155, 210);
-  line(30, 210, 100, 210);
-  line(155, 210, 250, 300);
-  line(250, 300, 380, 300);
-  line(380, 300, 380, 200);
-  line(380, 200, 300, 55);
-  line(300, 55, 300, 15);
-  noStroke();
-  fill("#4D798A");
-  textSize(12);
-  text("T1", 30, 220);
-
-  // --- T2 ---
-  noStroke();
-  fill(C_T2);
-  circle(385, 280, 6);
-  circle(60, 405, 6);
-  stroke(C_T2);
-  line(178, 245, 192, 258);
-  line(192, 258, 145, 305);
-  line(145, 305, 145, 405);
-  line(145, 405, 60, 405);
-  line(192, 258, 245, 305);
-  line(245, 305, 385, 305);
-  line(385, 305, 385, 220);
-  line(385, 220, 430, 220);
-  line(430, 220, 430, 280);
-  line(430, 280, 385, 280);
-  noStroke();
-  fill("#4D798A");
-  text("T2", 65, 410);
-
-  // --- T3 ---
-  noStroke();
-  fill(C_T3);
-  circle(390, 275, 6);
-  stroke(C_T3);
-  line(150, 380, 150, 340);
-  line(150, 340, 245, 340);
-  line(245, 340, 245, 310);
-  line(245, 310, 390, 310);
-  line(390, 310, 390, 225);
-  line(390, 225, 425, 225);
-  line(425, 225, 425, 275);
-  line(425, 275, 390, 275);
-  noStroke();
-  fill("#4D798A");
-  text("T3", 155, 370);
-
-  // --- T8 ---
-  noStroke();
-  fill(C_T8);
-  circle(150, 450, 6);
-  circle(340, 360, 6);
-  stroke(C_T8);
-  line(150, 450, 150, 395);
-  line(150, 395, 300, 395);
-  line(300, 395, 395, 310);
-  line(395, 310, 395, 230);
-  line(395, 230, 420, 230);
-  line(420, 230, 420, 270);
-  line(420, 270, 395, 270);
-  line(395, 270, 395, 350);
-  line(395, 350, 385, 360);
-  line(385, 360, 340, 360);
-  noStroke();
-  fill("#4D798A");
-  text("T8", 155, 440);
-
-  // --- T4 ---
-  noStroke();
-  fill(C_T4);
-  circle(370, 480, 6);
-  circle(440, 470, 6);
-  circle(490, 255, 6);
-  stroke(C_T4);
-  line(370, 480, 370, 338);
-  line(370, 338, 400, 313);
-  line(400, 313, 400, 255);
-  line(400, 255, 490, 255);
-  line(370, 470, 440, 470);
-  noStroke();
-  fill("#4D798A");
-  text("T4", 375, 460);
-
-  // --- T9 ---
-  noStroke();
-  fill(C_T9);
-  circle(297, 55, 6);
-  circle(330, 120, 6);
-  stroke(C_T9);
-  line(297, 55, 297, 295);
-  line(297, 295, 375, 295);
-  line(375, 295, 375, 200);
-  line(375, 200, 330, 120);
-  noStroke();
-  fill("#4D798A");
-  text("T9", 275, 65);
-
-  // --- T6 ---
-  noStroke();
-  fill(C_T6);
-  circle(270, 355, 6);
-  circle(250, 312, 6);
-  stroke(C_T6);
-  line(270, 355, 250, 340);
-  line(250, 340, 250, 312);
-  noStroke();
-  fill("#4D798A");
-  text("T6", 253, 320);
-
-  // --- Pink line ---
-  noStroke();
-  fill(C_PINK);
-  circle(267, 355, 6);
-  circle(355, 340, 6);
-  stroke(C_PINK);
-  line(270, 355, 310, 355);
-  line(310, 355, 330, 340);
-  line(330, 340, 355, 340);
-
-  // --- T7 ---
-  noStroke();
-  fill(C_T7);
-  circle(250, 295, 6);
-  circle(270, 240, 6);
-  stroke(C_T7);
-  line(250, 295, 270, 280);
-  line(270, 280, 270, 240);
-  noStroke();
-  fill("#4D798A");
-  text("T7", 253, 250);
-
-  // --- Undefined gray lines ---
-  stroke(C_UNDEF);
-  line(50, 380, 50, 260);
-  line(50, 260, 70, 210);
-  line(165, 210, 190, 235);
-  line(190, 235, 370, 235);
+  drawPolyline(P_M1, C_M1);
+  drawPolyline(P_T5, C_T5);
+  drawPolyline(P_T1, C_T1);
+  drawPolyline(P_T2, C_T2);
+  drawPolyline(P_T3, C_T3);
+  drawPolyline(P_T8, C_T8);
+  drawPolyline(P_T4, C_T4);
+  drawPolyline(P_T4_SHORT, C_T4);
+  drawPolyline(P_T9, C_T9);
+  drawPolyline(P_T6, C_T6);
+  drawPolyline(P_PINK, C_PINK);
+  drawPolyline(P_T7, C_T7);
+  drawPolyline(P_UNDEF1, C_UNDEF);
+  drawPolyline(P_UNDEF2, C_UNDEF);
 }
 
-// ------------------ TRAIN CLASS ------------------
-class Mover {
-  constructor(path, c, speed) {
-    this.path = path;
-    this.c = color(c);
-    this.speed = speed;
-    this.t = 0;
-    this.size = 10;
-  }
+function drawStations() {
+  noStroke();
+  textAlign(LEFT, TOP);
 
-  update() {
-    this.t += this.speed;
-    if (this.t > this.path.length - 1) this.t = 0;
-  }
+  fill(C_M1); circle(100,150, DOT_R); circle(380,340, DOT_R);
+  fill(C_M1); textSize(14); text("M1",105,135);
 
-  show() {
-    let i = floor(this.t);
-    let localT = this.t - i;
-    let curr = this.path[i];
-    let next = this.path[(i + 1) % this.path.length];
-    let pos = p5.Vector.lerp(curr, next, localT);
+  fill(C_T5); circle(50,50, DOT_R); circle(60,400, DOT_R);
+  fill("#4D798A"); textSize(14); text("T5",30,60);
 
-    push();
-    fill(this.c);
-    noStroke();
-    circle(pos.x, pos.y, this.size);
-    pop();
+  fill(C_T1); circle(55,50, DOT_R); circle(300,15, DOT_R); circle(30,210, DOT_R);
+  fill("#4D798A"); textSize(LABEL_FONT_SIZE); text("T1",30,220);
+
+  fill(C_T2); circle(385,280, DOT_R); circle(60,405, DOT_R);
+  fill("#4D798A"); textSize(LABEL_FONT_SIZE); text("T2",65,410);
+
+  fill(C_T3); circle(390,275, DOT_R);
+  fill("#4D798A"); textSize(LABEL_FONT_SIZE); text("T3",155,370);
+
+  fill(C_T8); circle(150,450, DOT_R); circle(340,360, DOT_R);
+  fill("#4D798A"); textSize(LABEL_FONT_SIZE); text("T8",155,440);
+
+  fill(C_T4); circle(370,480, DOT_R); circle(440,470, DOT_R); circle(490,255, DOT_R);
+  fill("#4D798A"); textSize(LABEL_FONT_SIZE); text("T4",375,460);
+
+  fill(C_T9); circle(297,55, DOT_R); circle(330,120, DOT_R);
+  fill("#4D798A"); textSize(LABEL_FONT_SIZE); text("T9",275,65);
+
+  fill(C_T6); circle(270,355, DOT_R); circle(250,312, DOT_R);
+  fill("#4D798A"); textSize(LABEL_FONT_SIZE); text("T6",253,320);
+
+  fill(C_PINK); circle(267,355, DOT_R); circle(355,340, DOT_R);
+
+  fill(C_T7); circle(250,295, DOT_R); circle(270,240, DOT_R);
+  fill("#4D798A"); textSize(LABEL_FONT_SIZE); text("T7",253,250);
+}
+
+function drawPolyline(points, col) {
+  if (!points || points.length < 2) return;
+  stroke(col);
+  for (let i = 0; i < points.length - 1; i++) {
+    const a = points[i], b = points[i + 1];
+    line(a.x, a.y, b.x, b.y);
   }
 }
+
+// ---------- Car (auto loop) ----------
+function advanceCar() {
+  carDist += carSpeed;
+  if (carDist >= carTotalLen) carDist -= carTotalLen;
+}
+
+function drawCar() {
+  let d = carDist;
+  let segIndex = 0;
+  while (segIndex < carSegLens.length && d > carSegLens[segIndex]) {
+    d -= carSegLens[segIndex];
+    segIndex++;
+  }
+  segIndex = constrain(segIndex, 0, carSegLens.length - 1);
+
+  const a = carPath[segIndex];
+  const b = carPath[segIndex + 1];
+  const t = d / Math.max(carSegLens[segIndex], 0.0001);
+  const pos = p5.Vector.lerp(a, b, t);
+
+  noStroke();
+  fill(CAR_COLOR);
+  circle(pos.x, pos.y, CAR_R);
+}
+
