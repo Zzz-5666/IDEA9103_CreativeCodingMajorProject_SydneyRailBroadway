@@ -1,8 +1,5 @@
 
-// sketch.js — Sydney Rail Network Map
-// Adjusted Canvas to 1000x800
-// Draw in 960x800, with +20 px margin each side
-// Visual Balance Improvements
+// City Circle demo — animated red "train" moving in loop
 
 const ORIG_W = 600;
 const ORIG_H = 500;
@@ -25,28 +22,50 @@ const C_PINK = "#FFB6C1";
 const C_T7 = "#808080";
 const C_UNDEF = "#D3D3D3";
 
+// Animation globals
+let cityCirclePath = [];
+let train;
+
 function setup() {
   createCanvas(1000, 800);
   angleMode(DEGREES);
-  noLoop();
   textFont("sans-serif");
   textAlign(LEFT, TOP);
+
+  // Define the City Circle route
+cityCirclePath = [
+  createVector(390, 225),
+  createVector(425, 225),
+  createVector(425, 245),
+  createVector(425, 275),
+  createVector(405, 275),
+  createVector(390, 265),
+  createVector(390, 225)
+];
+
+  // Create a red "train" that loops along the path
+  train = new Mover(cityCirclePath, "#FF0000", 0.005);
 }
 
 function draw() {
   background(255);
 
-  // leave 20px margins on each side
+  // Leave 20px margin on each side
   push();
   translate(20, 0);
   scale(960 / ORIG_W, 800 / ORIG_H);
 
   drawScene();
+
+  // --- City Circle Train Animation ---
+  train.update();
+  train.show();
+
   pop();
 }
 
+// ------------------ DRAW SCENE ------------------
 function drawScene() {
-  // Background
   noStroke();
   fill(COL_BG_BASE);
   rect(0, 0, 500, 500);
@@ -286,4 +305,32 @@ function drawScene() {
   line(190, 235, 370, 235);
 }
 
+// ------------------ TRAIN CLASS ------------------
+class Mover {
+  constructor(path, c, speed) {
+    this.path = path;
+    this.c = color(c);
+    this.speed = speed;
+    this.t = 0;
+    this.size = 10;
+  }
 
+  update() {
+    this.t += this.speed;
+    if (this.t > this.path.length - 1) this.t = 0;
+  }
+
+  show() {
+    let i = floor(this.t);
+    let localT = this.t - i;
+    let curr = this.path[i];
+    let next = this.path[(i + 1) % this.path.length];
+    let pos = p5.Vector.lerp(curr, next, localT);
+
+    push();
+    fill(this.c);
+    noStroke();
+    circle(pos.x, pos.y, this.size);
+    pop();
+  }
+}
