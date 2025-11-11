@@ -2,11 +2,11 @@
 // Rail Map — Drawing functions for the map rendering.
 
 /*
-Render Order of Layers
-drawSea() — Background panels and small masks.
-drawRails() — Polylines for each route.
-drawStations() — Final station dots placed on the lines.
-drawPolyline() — Helper that connects point arrays with lines.
+ Render Order of Layers
+ drawSea() — Background panels and small masks.
+ drawRails() — Polylines for each route.
+ drawStations() — Final station dots placed on the lines.
+ drawPolyline() — Helper that connects point arrays with lines.
 */
 
 
@@ -62,24 +62,28 @@ const p_T8 = [
   {x:150,y:450},{x:150,y:395},{x:300,y:395},{x:395,y:310},{x:395,y:230},
   {x:420,y:230},{x:420,y:270},{x:395,y:270},{x:395,y:350},{x:385,y:360},{x:340,y:360}
 ];
-const p_T4_SOUTH = [
-  {x:370,y:480}, {x:370,y:338},{x:400,y:313},{x:400,y:255}
+const p_T4_South = [
+  {x:370,y:480}, {x:370,y:338},{x:400,y:313},{x:400,y:255},{x:490,y:255}
 ];
-const p_T4_EAST = [
+const p_T4_East = [
   {x:370,y:480},{x:370,y:470},{x:440,y:470},{x:370,y:470},
   {x:370,y:338},{x:400,y:313},{x:400,y:255},{x:490,y:255}
 ];
 const p_T9 = [
   {x:300,y:55},{x:300,y:295},{x:375,y:295},{x:375,y:200},{x:330,y:120}
 ];
-const p_T6 = [
-  {x:270,y:355},{x:250,y:340},{x:250,y:312}
-];
 const p_T7 = [
   {x:250,y:300},{x:270,y:280},{x:270,y:235}
 ];
+const p_T6 = [
+  {x:270,y:355},{x:250,y:340},{x:250,y:312}
+];
 const p_Pink = [
   {x:270,y:355},{x:310,y:355},{x:330,y:340},{x:355,y:340}
+];
+const p_PinkWithT6 = [
+  {x:250, y:312},{x:250, y:340},{x:270, y:355},
+  {x:310, y:355},{x:330, y:340},{x:355, y:340}
 ];
 const p_Gray = [
   {x:165, y:210},{x:190, y:235},{x:370, y:235}
@@ -87,7 +91,9 @@ const p_Gray = [
 const p_WSA = [
   {x:50, y:380},{x:50, y:260},{x:70, y:210}
 ];
-
+const p_CityCircle = [
+  {x:390, y:225},{x:425, y:225},{x:425, y:275},{x:390, y:275},{x:390, y:225}
+];
 
 // Layers
 function drawSea() {
@@ -127,12 +133,12 @@ function drawRails() {
   drawPolyline(p_T3, c_T3);
   drawPolyline(p_T8, c_T8);
 
-  drawPolyline(p_T4_SOUTH, c_T4);
-  drawPolyline(p_T4_EAST,  c_T4);
+  drawPolyline(p_T4_South, c_T4);
+  drawPolyline(p_T4_East,  c_T4);
 
   drawPolyline(p_T9, c_T9);
-  drawPolyline(p_T6, c_T6);
   drawPolyline(p_T7, c_T7);
+  drawPolyline(p_T6, c_T6);
   drawPolyline(p_Pink, c_Pink);
   
   drawPolyline(p_Gray,c_Gray);
@@ -167,11 +173,11 @@ function drawStations() {
   // T9
   fill(c_T9); circle(300,55, dot_R); circle(330,120, dot_R);
 
-  // T6
-  fill(c_T6); circle(270,355, dot_R); circle(250.5,310, dot_R);
-
   // T7
   fill(c_T7); circle(250,300, dot_R); circle(270,235, dot_R);
+
+  // T6
+  fill(c_T6); circle(270,355, dot_R); circle(250.5,310, dot_R);
 
   // Pink
   fill(c_Pink); circle(270,355, dot_R); circle(355,340, dot_R);
@@ -191,4 +197,3 @@ function drawPolyline(points, color) {
     line(a.x, a.y, b.x, b.y);
   }
 }
-

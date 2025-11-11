@@ -2,11 +2,11 @@
 // Mondrian Town - Generates a Mondrian style abstract town map.
 
 /*
-(1) Style — Defines colors and stroke.
-(2) Outline — Draws the outer polygonal shape of the town.
-(3) Grid — Creates randomized inner grid lines.
-(4) Blocks — Fills outline and grid with colored rectangles.
-(5) Mondrian Town — Generates random rectangles in the interior area.
+ (1) Style — Defines colors and stroke.
+ (2) Outline — Draws the outer polygonal shape of the town.
+ (3) Grid — Creates randomized inner grid lines.
+ (4) Blocks — Fills outline and grid with colored rectangles.
+ (5) Mondrian Town — Generates random rectangles in the interior area.
 */
 
 
@@ -74,7 +74,6 @@ function initTownGrid() {
 
 function drawTownGrid() {
   if (townGridXs.length === 0) initTownGrid();
-
   stroke(mondrianYellow);
   strokeWeight(townLineW);
   noFill();
@@ -298,4 +297,3 @@ function drawMondrianTown() {
     rect(r.x, r.y, r.w, r.h);
   }
 }
-

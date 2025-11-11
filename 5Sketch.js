@@ -2,9 +2,8 @@
 // Sketch — Main scene setup and rendering everything.
 
 /*
-Canvas scaling from original 600×500 to 1000x800 with 960+20px margin both sides.
-Handles overall intergration including background, railmap, Mondrian town, and car animation.
-Automatically adjust with the windowResized function.
+ Canvas scaling from original 600×500 to 1000x800 with 960+20px margin both sides.
+ Handles overall intergration including background, railmap, Mondrian town, and car animation.
 */
 
 
@@ -21,7 +20,7 @@ function setup() {
   initGridBlocks();
   initMondrianTown();
 
-  initCarPath_CityCircle();
+  initCars();
 }
 
 
@@ -56,8 +55,8 @@ function draw() {
   drawStations();
 
   // 4) Car Animation
-  advanceCar();
-  drawCar();
+  advanceCars();
+  drawCars();
 
   pop();
   pop();
@@ -68,4 +67,3 @@ function draw() {
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
 }
-
