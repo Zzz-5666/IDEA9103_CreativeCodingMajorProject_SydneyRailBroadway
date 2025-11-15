@@ -11,6 +11,12 @@
 const BASE_W = 1000;
 const BASE_H = 800;
 
+//Time-based Rush Hour (personal contribution)
+let isRushHour = false;      // it is peak season now
+let rushStartTime = 0;       // peak start time
+let rushDuration = 5000;     // The peak lasted for 5 seconds.（5000 ms）
+let nextRushTime = 8000;     // The first peak occurred 8 seconds later.
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
   angleMode(DEGREES);
@@ -50,6 +56,9 @@ function draw() {
   drawTownOutline();
   drawOutlineBlocks();
 
+  //personal: rush hour status
+  updateRushHour();
+
   // 3) Rails & Stations
   drawRails();
   drawStations();
@@ -66,4 +75,20 @@ function draw() {
 // Adjustment
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
+}
+
+//Time-based: Rush Hour Event (personal)
+function updateRushHour() {
+  let t = millis(); // Milliseconds have elapsed since the program started running.
+
+if (!isRushHour && t > nextRushTime) { //If it's not currently peak time, but the time has exceeded nextRushTime, then it enters peak time.
+    isRushHour = true;
+    rushStartTime = t;
+
+    nextRushTime = t + rushDuration + random(8000, 15000);//The start time of the next peak period (randomly determined 8-15 seconds after the current peak ends).
+  }
+
+   if (isRushHour && t > rushStartTime + rushDuration) {// If it is currently peak time, but the peak period has already ended, then exit the peak period.
+    isRushHour = false;
+  }
 }

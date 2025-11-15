@@ -123,13 +123,49 @@ function drawSea() {
 }
 
 function drawRails() {
-  strokeWeight(stroke_W);
-  noFill();
+   noFill();
+  //person：shine
+  const baseWeight = 2;// 直接在这里设一个基础线宽
+// ===== Rush Hour 增强的倍率 =====
+  // 只会在“选中的几条线路”上使用
 
-  drawPolyline(p_M1, c_M1);
+// ===== M1（黄色） =====
+  // Rush Hour 时 M1 加粗：4 → 7（或你自己调）
+  if (isRushHour) {
+    strokeWeight(baseWeight * 1.8);  // 4 → 7.2，你可以自己再调
+  } else {
+    strokeWeight(baseWeight);
+  }
+  drawPolyline(p_M1, c_M1); // 这个是市中心的环线（很适合强调）
+
+
+  // ===== T5（粉色）→ 不加粗 =====
+  strokeWeight(baseWeight);   // 保持正常
+  drawPolyline(p_T5, c_T5);
+
+
+  // ===== T1（浅黄）→ 不加粗 =====
+  strokeWeight(baseWeight);
+  drawPolyline(p_T1, c_T1);
+
+
+  // ===== T2（蓝绿）→ 加粗示例 =====
+  // 这个是第二条你选中的增强线路
+  if (isRushHour) strokeWeight(baseWeight * 1.8);
+  else strokeWeight(baseWeight);
+  drawPolyline(p_T2, c_T2);
+
+
+
+
+ // 最终线宽
+  strokeWeight(baseWeight);
+ 
+
+ 
+  
   drawPolyline(p_T5, c_T5);
   drawPolyline(p_T1, c_T1);
-  drawPolyline(p_T2, c_T2);
   drawPolyline(p_T3, c_T3);
   drawPolyline(p_T8, c_T8);
 
@@ -145,48 +181,97 @@ function drawRails() {
   drawPolyline(p_WSA, c_Gray);
 
 }
+// ===== Time-based: Rush Hour 期间车站“呼吸”动画（个人部分） =====
+// 这个函数用来根据时间和 offset 返回当前车站的直径
+function stationRadius(offset) {
+  // baseR：基础直径，优先使用团队原来定义好的 dot_R
+  const baseR = (typeof dot_R !== 'undefined') ? dot_R : 6;
+
+  // 如果现在不是 Rush Hour，就保持原来的大小，不做动画
+  if (!isRushHour) {
+    return baseR;
+  }
+
+  // 高峰期时，用时间 + 偏移量做一个正弦波，让点有“呼吸感”
+  // millis() / 220 控制闪烁速度，数字越小闪得越快
+  const t = millis() / 220.0 + offset;
+
+  // scale 在 1.0 ~ 1.3 之间变化（放大 0%~30%）
+  const scale = 1.0 + 0.3 * sin(t);
+
+  // 返回当前时刻的直径（注意 p5.js 的 circle 第三个参数是直径）
+  return baseR * scale;
+}
+
 
 function drawStations() {
   noStroke();
 
   // M1
-  fill(c_M1); circle(100,150, dot_R); circle(380,340, dot_R);
+  fill(c_M1); 
+  circle(100,150, stationRadius(0.1)); // offset 0.1：节奏 A
+  circle(380,340, stationRadius(0.4));// offset 0.1：节奏 A
 
   // T5
-  fill(c_T5); circle(50,50, dot_R); circle(60,400, dot_R);
+  fill(c_T5); 
+  circle(50,50, stationRadius(0.7));
+   circle(60,400, stationRadius(1.0));
 
   // T1
-  fill(c_T1); circle(55,50, dot_R); circle(300,15, dot_R); circle(30,210, dot_R);
+  fill(c_T1); 
+  circle(55,50, stationRadius(1.3));
+  circle(300,15, stationRadius(1.3));
+  circle(30,210, stationRadius(1.3));
 
   // T2
-  fill(c_T2); circle(385,280, dot_R); circle(60,405, dot_R);
+  fill(c_T2); 
+  circle(385,280, stationRadius(1.3));
+  circle(60,405, stationRadius(2.5));
 
   // T3
-  fill(c_T3); circle(390,275, dot_R); circle(150,380, dot_R);
+  fill(c_T3); 
+  circle(390,275, stationRadius(2.8));
+  circle(150,380, stationRadius(3.1));
 
   // T8
-  fill(c_T8); circle(150,450, dot_R); circle(340,360, dot_R);
+  fill(c_T8); 
+  circle(150,450, stationRadius(3.4));
+  circle(340,360, stationRadius(3.7));
 
   // T4
-  fill(c_T4); circle(370,480, dot_R); circle(440,470, dot_R); circle(490,255, dot_R);
+  fill(c_T4); 
+  circle(370,480, stationRadius(4.0));
+  circle(440,470, stationRadius(4.3));
+  circle(490,255, stationRadius(4.6));
 
   // T9
-  fill(c_T9); circle(300,55, dot_R); circle(330,120, dot_R);
+  fill(c_T9); 
+  circle(300,55, stationRadius(4.9));
+  circle(330,120, stationRadius(5.2));
 
   // T7
-  fill(c_T7); circle(250,300, dot_R); circle(270,235, dot_R);
-
+  fill(c_T7); 
+  circle(250,300, stationRadius(5.5));
+  circle(270,235, stationRadius(5.8));
   // T6
-  fill(c_T6); circle(270,355, dot_R); circle(250.5,310, dot_R);
+  fill(c_T6); 
+  circle(270,355, stationRadius(6.1));
+  circle(250.5,310, stationRadius(6.4));
 
   // Pink
-  fill(c_Pink); circle(270,355, dot_R); circle(355,340, dot_R);
+  fill(c_Pink); 
+  circle(270,355, stationRadius(6.7));
+  circle(355,340, stationRadius(7.0));
 
   // Gray
-  fill(c_Gray); circle(165,210, dot_R); circle(370,235, dot_R);
+  fill(c_Gray); 
+  circle(165,210, stationRadius(7.3));
+  circle(370,235, stationRadius(7.6));
 
   // WSA
-  fill(c_Gray); circle(50,380, dot_R); circle(70,210, dot_R);
+  fill(c_Gray); 
+  circle(50,380, stationRadius(7.9));
+  circle(70,210, stationRadius(8.2));
 }
 
 function drawPolyline(points, color) {

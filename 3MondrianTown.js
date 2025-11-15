@@ -33,9 +33,14 @@ const townOutline = [
 ];
 
 function drawTownOutline() {
-  stroke(mondrianYellow);
+  if (isRushHour) {  // 高峰期：偏红一点，体现紧张
+     stroke(lerpColor(color(mondrianYellow), color(mondrianRed), 0.6));
+  } else {
+    stroke(mondrianYellow);
+  }
   strokeWeight(townLineW);
   noFill();
+
 
   for (let i = 0; i < townOutline.length - 1; i++) {
     let a = townOutline[i];
