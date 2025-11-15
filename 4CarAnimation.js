@@ -70,28 +70,15 @@ class Car {
   advance() {
     if (this.totalLenth <= 0) return;
 
-    //adjust rush hour speed(person)
-    let currentSpeed = this.speed;
-    if (isRushHour) {
-      let elapsed = millis() - rushStartTime;
-  //  One second before the peak: There is an "accelerated warm-up" to show the change in rhythm.
-  if (elapsed < 1000) {
-      currentSpeed *= 2.0;
-    } 
-    // During peak hours: vehicle speeds increase significantly, reflecting the high pressure on the city.
-    else {
-      currentSpeed *= 4.0;  
-    }
-  }
-
- 
     if (this.mode === "loop") {
       
       // Loop Mode: Restart after finishing one round.
-      this.dist += currentSpeed;
+      this.dist += this.speed;
       if (this.dist >= this.totalLenth) this.dist -= this.totalLenth;
     } else {
-      this.dist += currentSpeed * this.direction;
+      
+      // Pingpong Mode: Reverse direction at both ends.
+      this.dist += this.speed * this.direction;
       if (this.dist > this.totalLenth) {
         this.dist = this.totalLenth - (this.dist - this.totalLenth);
         this.direction = -1;
